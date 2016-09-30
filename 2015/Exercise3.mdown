@@ -1,0 +1,271 @@
+##EXERCISE 3: Advanced Stacks & optimizing parameters
+
+Today, we will build on the basic pipeline to add additional arguments to each step, add additional steps to ensure high quality results, and learn about how to optimize parameters.
+
+
+###Additional arguments
+
+In the previous exercise, I presented the basic pipeline with the minimal arguments for each step. Now, let's explore some of the other arguments that we can add. As we go through, you can modify your script from yesterday to include the new arguments.
+
+Open the [webpage](http://creskolab.uoregon.edu/stacks/comp/ustacks.php) for `ustacks` and browse through the options. Here are some that I like to include when running `ustacks`:
+
+* `-r` to remove highly repetetive stacks
+* `-d` to resolve overmerged stacks
+* `--max_locus_stacks` to define the maximum number of stacks that can be merged into a locus
+* `--model_type bounded` and `--bound_high` to use a more reasonable model of sequencing error with a maximum rate around 0.01 to 0.10.
+
+The `--model_type` argument is also relevant for `pstacks` reference-based pipeline.
+
+Add these terms to your script from Exercise 2. The relevant line from the loop might look something like this:
+
+	ustacks -t gzfastq -f ~/Desktop/GBS_Data/${sample}.fq.gz -o ~/Desktop/GBS_Data/Stacks_Output/ -i $i -m 3 -M 2 -p 2 -r -d --max_locus_stacks 3 --model_type bounded --bound_high 0.05
+	
+What effect do you think each argument will have?
+
+Browse the webpages for `cstacks` and `sstacks`. Do you see anything you might add? Personally, I don't use any of the additional options on these parts of Stacks.
+
+Finally, let's look more carefully at the `populations` [manual](http://creskolab.uoregon.edu/stacks/comp/populations.php). Here are some potentially important arguments to consider:
+
+* `-s` to print a file for uploading to a database with a graphical interface. We will learn more about this later, but I recommend it.
+* `-B` to specify a file with loci that you do not want to include in the output, for example, if you looked at them and think they are not accurate or if it is a locus that doesn't interest you for some reason.
+* `-p` to keep only loci found in a at least a certain number of populations. It is recommended to use `-p` and `-r` in combination instead of `-m`. 
+* `--lnl_lim` to filter low-quality or unlikely loci. Higher negative log-likelihoods (less negative) are better.
+
+Then there are a few options about how to report summary statistics that I do not typically use. Instead I use other population genetics software. Finally, you can choose which output file formats you would like, so you can do anaylses in other programs.
+
+Here is how the new `populations` command might look:
+
+	populations -P ~/Desktop/GBS_Data/Stacks_Output/ -M ~/Desktop/GBS_Data/popmap -t 2 -r 0.8 -p 2 -b 1 -s --lnl_lim -10 --fasta --plink --structure
+
+###The full pipeline
+
+In Exercise 2, you learned the basic pipeline, but more steps are required to enhance the quality of the Stacks results. This full pipeline is as follows:
+
+1. `process_radtags`
+2. `ustacks` or `pstacks`
+3. `cstacks`
+4. `sstacks`
+5. `rxstacks`
+6. `cstacks`
+7. `sstacks`
+8. `populations`
+9. `load_radtags.pl`
+10. `index_radtags.pl`
+11. Examine output files and MySQL database, filter, decide about blacklisting, decide about changing parameters or re-running pipeline, and consider `export_sql.pl` and  rerunning `populations`
+
+You know 1-4. Let's start with 5. `rxstacks` will correct the haplotype/genotype calls of individuals using information from the whole population. It especially will help filter out calls due to sequencing errors and low coverage, as well as cases when multiple loci in an individual map to multiple catalog loci or there are an excessive number of haplotypes at a locus. 
+
+To avoid overwriting previous results, make a new output folder: `mkdir ~Desktop/GBS_Data/Corrected_Output`. Then, try running this command on your results from yesterday:
+
+	rxstacks -b 1 -P ~/Desktop/GBS_Data/Stacks_Output/ -o ~/Desktop/GBS_Data/Corrected_Output/ --conf_filter --conf_lim 0.25 --prune_haplo --model_type bounded --bound_high 0.05 --lnl_filter --lnl_lim -10.0 -t 2 --verbose --lnl_dist &>> ~/Desktop/GBS_Data/Corrected_Output/Log
+
+While its running, read the [webpage](http://creskolab.uoregon.edu/stacks/comp/rxstacks.php) to learn more about the parameters. A key feature of `rxstacks` is setting the log-likelihood limit (`--lnl_lim`). -10.0 seems to be a good starting point but you might also consider a stricter value (larger, less negative). The web manual provides the following code to make a table that can be used to make a histogram of the log-likelihoods, which might help you a threshold. You would run this on the original output in `Stacks_Output`, before filtering with `rxstacks`, etc. You can run this if you are bored waiting for `rxstacks` to finish; otherwise, skip this code.
+
+	cat batch_1.rxstacks_lnls.tsv | grep -v "^#" | awk '{bucket=(int($2)); lnls[bucket] += 1} END { for (bucket in lnls) print bucket, "\t", lnls[bucket]}' | sort -n > lnls.tsv
+
+When `rxstacks` finishes, notice that it has written new files for each sample to the output folder. Some look similar to those output by `ustacks` in the first step, but others are new, such as a list of blacklisted loci that were filtered. You can see the summary of what it did by looking at the "Log" file. Normally, the information in Log is printed to the screen but is instead saved to this file because of this part of the above command: `&>> ~/Desktop/GBS_Data/Corrected_Output/Log`.
+
+Now, we need to rerun `cstacks`, `sstacks`, and `populations` on the new filtered data files, but (probably) using the same settings as you did prior to `rxstacks`. When `rxstacks` finishes, you can rerun `cstacks`, `sstacks`, and `populations` but remember that the input data is now in `~/Desktop/GBS_Data/Corrected_Output` not `~/Desktop/GBS_Data` (also send the output to Corrected_Output). After you start running those, add the `rxstacks` command above, plus your additional `cstacks` and `sstacks` commands, to your "master" script that you have been working on and adding to.
+
+When `populations` finishes, look at the summary statistics file. How do the results differ from the unfiltered run we did yesterday? Another way to check if the results make sense is to run an ordination (MDS using Hamming distance or PCA) and check that individuals from the same population cluster with each other. We can do that seamlessly by using [PLINK](https://www.cog-genomics.org/plink2), which is another genomics software package separately installed. Here are the commands you can run MDS (a.k.a PCoA) for the output pre-filtering and post-filtering. 
+
+	cd ~/Desktop/GBS_Data/Stacks_Output/
+	plink --file batch_1.plink --cluster --mds-plot 4 --allow-extra-chr
+	cd ~/Desktop/GBS_Data/Corrected_Output/
+	plink --file batch_1.plink --cluster --mds-plot 4 --allow-extra-chr
+	cd ..
+
+Then, you can use your favorite software to plot axes C1 versus C2 from `plink.mds`. Note that the virtual machine has RStudio and LibreOffice Calc (like Excel) installed for you to do this. Do the three populations form distinct clusters in each?
+
+You can add `plink` to your master script if you like. I usually make one script from `ustacks` to `populations` (Steps 2-8 above) plus `plink`. 
+
+Your master script should now look something like this (don't run it now):
+
+	#!/bin/bash
+	
+	#MASTER SCRIPT FOR STACKS. Assumes process_radtags was already run.
+	#2. RUN USTACKS
+	samples="SC1
+	SC6
+	SR3
+	SR6
+	TE3
+	TE11"
+	
+	i=1
+	for sample in $samples
+	do
+	   ustacks -t gzfastq -f ~/Desktop/GBS_Data/${sample}.fq.gz -o ~/Desktop/GBS_Data/Stacks_Output/ -i $i -m 3 -M 2 -p 2 -r -d --max_locus_stacks 3 --model_type bounded --bound_high 0.05
+	   let "i+=1";
+	done
+	
+	#3. RUN CSTACKS
+	cstacks -b 1 -o ~/Desktop/GBS_Data/Stacks_Output -p 2 -n 2 -s ~/Desktop/GBS_Data/Stacks_Output/SC6 -s ~/Desktop/GBS_Data/Stacks_Output/SR6 -s ~/Desktop/GBS_Data/Stacks_Output/TE11
+	
+	#4. RUN SSTACKS
+	for sample in $samples
+	do
+	   sstacks -b 1 -c ~/Desktop/GBS_Data/Stacks_Output/batch_1 -s ~/Desktop/GBS_Data/Stacks_Output/${sample} -o ~/Desktop/GBS_Data/Stacks_Output -p 2 &>> ~/Desktop/GBS_Data/Stacks_Output/Log
+	done
+	
+	#5. RUN RXSTACKS
+	rxstacks -b 1 -P ~/Desktop/GBS_Data/Stacks_Output/ -o ~/Desktop/GBS_Data/Corrected_Output/ --conf_filter --conf_lim 0.25 --prune_haplo --model_type bounded --bound_high 0.05 --lnl_filter --lnl_lim -10.0 -t 2 --verbose --lnl_dist &>> ~/Desktop/GBS_Data/Corrected_Output/Log
+	
+	#6. RUN CSTACKS
+	cstacks -b 1 -o ~/Desktop/GBS_Data/Corrected_Output -p 2 -n 2 -s ~/Desktop/GBS_Data/Corrected_Output/SC6 -s ~/Desktop/GBS_Data/Corrected_Output/SR6 -s ~/Desktop/GBS_Data/Corrected_Output/TE11
+
+	#7. RUN SSTACKS
+	for sample in $samples
+	do
+	   sstacks -b 1 -c ~/Desktop/GBS_Data/Corrected_Output/batch_1 -s ~/Desktop/GBS_Data/Corrected_Output/${sample} -o ~/Desktop/GBS_Data/Corrected_Output -p 2 &>> ~/Desktop/GBS_Data/Corrected_Output/Log
+	done
+	
+	#8. RUN POPULATIONS
+	populations -P ~/Desktop/GBS_Data/Corrected_Output/ -M ~/Desktop/GBS_Data/popmap -t 2 -r 0.9 -b 1 -s --lnl_lim -10 --fasta --plink --structure
+	
+	#8A. RUN PLINK
+	cd ~/Desktop/GBS_Data/Stacks_Output/
+	plink --file batch_1.plink --cluster --mds-plot 4 --allow-extra-chr
+	cd ~/Desktop/GBS_Data/Corrected_Output/
+	plink --file batch_1.plink --cluster --mds-plot 4 --allow-extra-chr
+	cd ..
+	
+Steps 9-11 above relate to a MySQL database, which will be described in the next section.
+
+
+###The MySQL database
+
+[MySQL](https://www.mysql.com/) is an open-source database system. I only know the basics, just to use it for Stacks. The advantages of using the database are that it can be used to visualize the data in browser window (*e.g.* Firefox), has additional filters in the web interface, and can be used to export a summary file that might be useful for some purposes. It is best to limit how much you run these steps because they are slow and take lots of hard drive space. I usually only run them after the parameters have been optimized (see next section).
+
+**Do not run** any of the commands in this section today. Some of them take a very long time to finish, so I have already run them for you instead. However, I have provided step-by-step instructions so you can try it on your own in the future.  Here they are...
+
+First, we would need to create a database name and structure (it will ask for the password: genomics). The name must end in "_radtags".
+
+	mysql -p -e "CREATE DATABASE WorkshopExample_radtags"
+	mysql -p WorkshopExample_radtags < /usr/local/share/stacks/sql/stacks.sql
+
+Next, we would load the data into the database. Note that this is only possible if you indicated `-i` for each sample in `sstacks`, `-b` in several steps, and `-s` in populations.
+
+	load_radtags.pl -D WorkshopExample_radtags -p ~/Desktop/GBS_Data/Corrected_Output/ -b 1 -M ~/Desktop/GBS_Data/popmap -c -B -e "Q. rugosa example data from workshop" -t population
+	index_radtags.pl -D WorkshopExample_radtags -c -t
+
+Because I already ran these, we can go straight to accessing the database using the web browser. Double-click Firefox and type into the address bar:
+
+	localhost/stacks
+	
+Hit `Enter` and the database should appear. You can browse by sample or catalog locus, look at the coverage and evidence for each SNP, and filter the data. You can also export the filtered data from here into an Excel format.
+
+If you are satisfied you can generate a file with all the data in a compact form using `export_sql.pl` in the command line. On the [webpage](http://creskolab.uoregon.edu/stacks/comp/export_sql.php) you will see many filters you can apply, but here is the basic command with one filter shown. I have also already run this for you and the results are in `~/Desktop/GBS_Data/MySQL_Export`.
+
+	export_sql.pl -D WorkshopExample_radtags -b 1 -f ~/Desktop/GBS_Data/Corrected_Output/WorkshopExample_alleles.tsv -o tsv -F snps_l=1 -F snps_u=3
+	
+Finally, note that the databases are big and you need to create a new one for each run that you want to see in the browser. When you are finished with one and no longer want it you can remove the database with the following command.
+
+	mysql -p -e "DROP DATABASE WorkshopExample_radtags"
+	
+That is the whole pipeline! Now let's optimize it.
+
+
+###Optimizing parameters
+
+There is no easy way to optimize parameter values other than running the program over and over with different combinations of reasonable values. The most important ones to vary are `-m`, `-M`, and `-n` (see [here](http://creskolab.uoregon.edu/stacks/param_tut.php)) and you might also try different values for `--bound_high` and `--max_locus_stacks`. What values are considered reasonable will depend on the biology of your organism(s) and the depth of sequencing. For typical population genetic data, I have tried `-m` 2-5, `-M` 1-3, `-n` 1-3, `--bound_high` 0.01, 0.03, 0.05 and 0.10, and `--max_locus_stacks` 2-4. In my experience, the latter two do not have much impact on the results from my data sets and I set them to 0.05 and 3, respectively. Because it would take far too long to run every combination of every parameter, I usually optimize one at a time holding the other constant. In addition, I set `-M` = `-n` because they are conceptually similar, except that one compares stacks within samples and the other between samples.
+
+To enable running the script repeatedly with different values, we can modify the master script by inserting variables for each parameter value we want to vary. Specifically, we can utilize a particular kind of variable that is automatically generated when arguments are typed into the command line.
+
+For example, we modify yesterday's example script that we called `ustacks_loop.sh` like this:
+
+	#!/bin/bash
+	
+	samples="SC1
+	SC6
+	SR3
+	SR6
+	TE3
+	TE11"
+	
+	i=1
+	for sample in $samples
+	do
+	   ustacks -t gzfastq -f ~/Desktop/GBS_Data/${sample}.fq.gz -o ~/Desktop/GBS_Data/Stacks_Output -i $i -m $1 -M $2 -p 2
+	   let "i+=1";
+	done
+
+Do you see the difference? I inserted `$1` for the value of `-m` and `$2` for the value of `-M`. To run the script with `-m 3` and `M 2`, we would now type it in the command line like this
+
+	./ustacks_loop.sh 3 2
+
+So, `$1` is the first command line argument (after the script name) and `$2` is the second, etc. Try modifying the master script to enable command line arguments for `-b` (the batch number should change every time you run Stacks), `-m`, `-M`, `-n`, `--bound_high`, and `--max_locus_stacks`.
+
+If you run the same script multiple times with different parameter values, you will want it to save the results in dfferent folders, so you can also have it create folders with informative names (*e.g.* add `mkdir` to your script).
+
+Try it on your own before reading my version below. 
+
+	#!/bin/bash
+	
+	#MASTER SCRIPT FOR STACKS. Assumes process_radtags was already run.
+	#Order of command line arguments -b -m -M -n --max_locus_stacks --bound_high
+	
+	#Create output directories and define variables for output folders (so the code is cleaner below)
+	mkdir ~/Desktop/GBS_Data/Stacks_Output/b$1_m$2_M$3_n$4_mls$5_bh$6
+	OUT=~/Desktop/GBS_Data/Stacks_Output/b$1_m$2_M$3_n$4_mls$5_bh$6
+	mkdir ~/Desktop/GBS_Data/Corrected_Output/b$1_m$2_M$3_n$4_mls$5_bh$6
+	COR_OUT=~/Desktop/GBS_Data/Corrected_Output/b$1_m$2_M$3_n$4_mls$5_bh$6
+	
+	#2. RUN USTACKS
+	samples="SC1
+	SC6
+	SR3
+	SR6
+	TE3
+	TE11"
+	
+	i=1
+	for sample in $samples
+	do
+	   ustacks -t gzfastq -f ~/Desktop/GBS_Data/${sample}.fq.gz -o ${OUT}/ -i $i -m $2 -M $3 -p 2 -r -d --max_locus_stacks $5 --model_type bounded --bound_high $6
+	   let "i+=1";
+	done
+	
+	#3. RUN CSTACKS
+	cstacks -b $1 -o ${OUT} -p 2 -n $4 -s ${OUT}/SC6 -s ${OUT}/SR6 -s ${OUT}/TE11
+	
+	#4. RUN SSTACKS
+	for sample in $samples
+	do
+	   sstacks -b $1 -c ${OUT}/batch_$1 -s ${OUT}/${sample} -o ${OUT} -p 2 &>> ${OUT}/Log
+	done
+	
+	#5. RUN RXSTACKS
+	rxstacks -b $1 -P ${OUT}/ -o ${COR_OUT}/ --conf_filter --conf_lim 0.25 --prune_haplo --model_type bounded --bound_high $6 --lnl_filter --lnl_lim -10.0 -t 2 --verbose --lnl_dist &>> ${COR_OUT}/Log
+	
+	#6. RUN CSTACKS
+	cstacks -b $1 -o ${COR_OUT} -p 2 -n $4 -s ${COR_OUT}/SC6 -s ${COR_OUT}/SR6 -s ${COR_OUT}/TE11
+
+	#7. RUN SSTACKS
+	for sample in $samples
+	do
+	   sstacks -b $1 -c ${COR_OUT}/batch_$1 -s ${COR_OUT}/${sample} -o ${COR_OUT} -p 2 &>> ${COR_OUT}/Log
+	done
+	
+	#8. RUN POPULATIONS
+	populations -P ${COR_OUT}/ -M ~/Desktop/GBS_Data/popmap -t 2 -r 0.9 -b $1 -s --lnl_lim -10 --fasta --plink --structure
+	populations -P ${OUT}/ -M ~/Desktop/GBS_Data/popmap -t 2 -r 0.9 -b $1 -s --lnl_lim -10 --fasta --plink --structure
+	
+	#8A. RUN PLINK (MDS and PCA)
+	cd ${OUT}/
+	plink --file batch_$1.plink --cluster --mds-plot 4 --allow-extra-chr
+	plink --file batch_$1.plink --cluster --pca 4 --allow-extra-chr
+	cd ${COR_OUT}/
+	plink --file batch_$1.plink --cluster --mds-plot 4 --allow-extra-chr
+	plink --file batch_$1.plink --cluster --pca 4 --allow-extra-chr
+	cd ..
+
+Then, you can run this master script with many sets of command line arguments are compare the outputs (do not run now... it will take too long!). For example, to run it with all the same values we used earlier and yesterday:
+
+	./master_script.sh 1 3 2 2 3 0.05
+
+But if we run this many times, how do we compare all the data!?	Mastretta-Yanes *et al.* (2014) have an excellent way that involves a series of R scripts found [here](https://github.com/AliciaMstt/RAD-error-rates). However, it relies on having replicates of the same individuals in multiple lanes. It is in fact a good idea to do this, but what if you didn't or couldn't?
+
+I use a simpler approach that is in the same spirit of their approach.  Instead I choose a small subset of samples from a few sites known (or suspected) to differ genetically (perhaps 3 sample from each of 3 sites), and I run the master script on those with a variety of parameter values. I then choose the set of parameter values that leads to reasonable summary statistics and maximizes SNPs, but most importantly, the one that recovers the expected population structure in a PCA and/or MDS from PLINK. Essentially, we want to minimize the distance between points on the MDS/PCA of individuals from the same sample site while maximizing the difference among sites. If you had identical replicates of individuals their points should be on top of each other (except for error). This logic can be extended to samples from a population under the assumption that they should be more closely related and thus more genetically similar than those for distant populations. 
+
+It will take too long to run an optimization procedure within this workshop, but now you have the script and the tools to do it. Please try it on your own some time and feel free to contact me if you have any questions!

@@ -1,0 +1,178 @@
+##EXERCISE 2: Running the basic Stacks pipeline to call SNPs
+
+[Stacks](http://creskolab.uoregon.edu/stacks/) is a fairly sophisticated and rather complicated pipeline for identifying SNPs from RAD-Seq or GBS data. It can be used with or without reference genome, although it is most popular when a reference is not available as in most non-model organisms. There is also a popular [Google Group](https://groups.google.com/forum/#!forum/stacks-users) for asking questions and troubleshooting. For this exercise, we will start with the basic *de novo* SNP calling pipeline and then you will have an opportunity to try the reference based pipeline. We will start with the data we converted to FASTQ yesterday to demonstrate the quality filtering portion of the pipeline, but then we will switch to some real samples from *Quercus rugosa* for the rest.
+
+###Demultiplexing and removing low quality reads
+
+Stacks provides a convenient tool called [process_radtags](http://creskolab.uoregon.edu/stacks/comp/process_radtags.php) for simultaneously demultiplexing and removing low quality reads. To demultiplex (separate the reads into new files by sample), it requires a file that lists all the barcodes, which I included here as barcodes.txt. First, navigate to `/home/genomics/Desktop/QSEQ_Data/` and `mkdir Processed_Radtags`.
+
+Now run the `process_radtags` command as follows (all one line).
+
+	process_radtags -p ~/Desktop/QSEQ_Data/FASTQ/ -i fastq -o ~/Desktop/QSEQ_Data/Processed_Radtags/ -y fastq -b barcodes.txt -e apeKI --adapter_1 AGATCGGAAGAGCGGTTCAGGAATGCCGAG --adapter_mm 2 -r -c -q -s 10 -t 92
+
+Every command in Stacks has many options, so it's best to construct each with the help on the online manual. Let's dissect this command while it's running. With `-p` we indicate the directory with the sequence data, `-i` the type of sequence file, `-o` the output directory, `-y` the output format, `-b` the barcode file to use for demultiplexing, `-e` the restriction enzyme so it knows what cut site sequence to expect after the barcode, `--adapter_1` to indicate the adapter sequence to identify and remove contaminants, `--adapter_mm` the number of mismatches allowed between the read and real adapter sequence, `-r` to "rescue" (keep) a sequence if there is one error in the barcode, `-c` to remove reads with uncalled bases (N), `-q` to discard reads with low quality scores which are defined by a sliding window if the average score is less than `-s`, and finally `-t` to trim all the reads to the same length of 92 bases. Take a minute to review the `process_radtags` [webpage](http://creskolab.uoregon.edu/stacks/comp/process_radtags.php) and see if you understand each part or find additional arguments that could be useful.
+
+We will now switch to using a real data set, so remove the Processed_Radtags folder and data with `rm -r Processed_Radtags` or if you want to keep it, then compress it with `tar -zcvf Processed_Radtags.tar.gz Processed_Radtags` and then remove Processed_Radtags/.
+
+
+###The core Stacks pipeline
+
+The core of the Stacks pipeline is
+1. `ustacks` or `pstacks`
+2. `cstacks`
+3. `sstacks` 
+4. `populations`
+
+[ustacks](http://creskolab.uoregon.edu/stacks/comp/ustacks.php) is for *de novo* SNP calling and [pstacks](http://creskolab.uoregon.edu/stacks/comp/pstacks.php) for reference guided SNP calling. `ustacks` finds sets of exactly matching sequences (*i.e.* "stacks"). [cstacks](http://creskolab.uoregon.edu/stacks/comp/cstacks.php) merges similar stacks (alleles) into a set of consensus loci that they call the "catalog", which is a sort or "reference" library of fragments (one per locus). [sstacks](http://creskolab.uoregon.edu/stacks/comp/sstacks.php) calls SNPs in each sample by matching them to the catalog. [populations](http://creskolab.uoregon.edu/stacks/comp/populations.php) will filter SNP data, rearrange it into common file formats, and calculate a variety of population genetic summary statistics. Let's run each step of the pipeline using a few samples of [genotyping-by-sequencing](http://www.biotech.cornell.edu/brc/genomic-diversity-facility) (GBS) (Elshire *et al.* 2011 PLoS ONE) data from *Quercus rugosa*. 
+
+
+###*De novo* SNP calling pipeline
+Navigate to `~/Desktop/GBS_Data/` and list the directory contents. You will see six compressed FASTQ files (.fq.gz) named by sample ID, the barcodes.txt file you saw earlier, and a popmap file which we will discuss later. Now, create an output folder for the Stacks results: `mkdir Stacks_Output`. Then, we are ready to run `ustacks` for each sample. Try running the first of the following commands. If you have more than 2 processors on your virtual machine, change the `-p` value accordingly.
+
+	ustacks -t gzfastq -f ~/Desktop/GBS_Data/SC1.fq.gz -o ~/Desktop/GBS_Data/Stacks_Output/ -i 1 -m 3 -M 2 -p 2
+	ustacks -t gzfastq -f ~/Desktop/GBS_Data/SC6.fq.gz -o ~/Desktop/GBS_Data/Stacks_Output/ -i 2 -m 3 -M 2 -p 2
+	ustacks -t gzfastq -f ~/Desktop/GBS_Data/SC9.fq.gz -o ~/Desktop/GBS_Data/Stacks_Output/ -i 3 -m 3 -M 2 -p 2
+	...
+
+Its progress will be printed to the screen. While its running, look up what each argument does on the [website](http://creskolab.uoregon.edu/stacks/comp/ustacks.php) (`-m` and `-M` are especially [important](http://creskolab.uoregon.edu/stacks/param_tut.php).). Notice that the only things that change from one line to the next are the input file (*i.e.* the sample) and `-i`. `-i` is an sample number that should be unique for each sample.
+
+Even with only six samples, you might be noticing how tedious it would to type each command in sequence and then wait for it to finish. Instead, we can write a script to run them all at once using a `for` loop. Copy the following example into an empty text file and save it as `ustacks_loop.sh`.
+
+	#!/bin/bash
+	
+	samples="SC1
+	SC6
+	SR3
+	SR6
+	TE3
+	TE11"
+	
+	i=1
+	for sample in $samples
+	do
+	   ustacks -t gzfastq -f ~/Desktop/GBS_Data/${sample}.fq.gz -o ~/Desktop/GBS_Data/Stacks_Output/ -i $i -m 3 -M 2 -p 2
+	   let "i+=1";
+	done
+
+The first line indicates that it is a certain kind of script that runs in the `bash` shell (don't worry about this). Then, it defines the list of samples and assigns them to the variable called `samples`.  Then, its sets the variable i = 1. Once a variable is defined, you can recall it later with the notation `$variable`, so if you typed i=1 into your Terminal and then typed `echo $i`, it will return the value 1. 
+
+Then, we get to the `for` loop, which says for each `sample` in the variable `samples`, `do` some command (*i.e.* `ustacks ...`). Notice how `$sample` and `$i` recall the variables defined earlier as `samples` and `i`. When run the first sample name will be inserted in place of `${sample}` and the value for i in place of `$i`. 
+
+After it runs that command it adds 1 to i and then goes back to the beginning of the loop. So when the loop runs again, it uses the second sample and `$i` is now 2. It does this until all the samples in the list have been processed.
+
+To run the script, we first need to make it executable.
+
+	chmod +x ustacks_loop.sh
+
+Then, run it. It should take about 30 minutes.
+
+	./ustacks_loop.sh
+
+That's it! You just wrote your first shell script and your first loop. This skill will be useful in other parts of Stacks and for bioinformatics in general. When it finishes take a look at the output files using `zcat` and `less`. These files are not very useful at this stage, but it is good to know what each part of the program generates.
+
+For `cstacks`, we run one command that includes all the samples we want to use to build the catalog (~reference). Let's just use 3 samples (one from each sample site) to build the catalog
+
+	cstacks -b 1 -o ~/Desktop/GBS_Data/Stacks_Output -p 2 -n 2 -s ~/Desktop/GBS_Data/Stacks_Output/SC6 -s ~/Desktop/GBS_Data/Stacks_Output/SR6 -s ~/Desktop/GBS_Data/Stacks_Output/TE11
+
+When there are more samples, it can be helpful to generate the input command using a `for` loop. If you want to know more, there are examples for Stacks [here](http://creskolab.uoregon.edu/stacks/manual/#phand). While the command is running [read](http://creskolab.uoregon.edu/stacks/comp/cstacks.php) what each argument does (`-n` is especially [important](http://creskolab.uoregon.edu/stacks/param_tut.php)). 
+
+When `cstacks` finishes, look at the output files.
+
+`sstacks` also needs to be run on each sample to call SNPs for each individual relative to the catlog. Write a script with a `for` loop that will run the following example command on the 6 samples we ran with `ustacks`. Consult the Stacks manual for help [here](http://creskolab.uoregon.edu/stacks/manual/#phand).
+
+	sstacks -b 1 -c ~/Desktop/GBS_Data/Stacks_Output/batch_1 -s ~/Desktop/GBS_Data/Stacks_Output/SC1 -o ~/Desktop/GBS_Data/Stacks_Output -p 2
+
+When you have created your script and run it, take a look at the output files. So far none of them are easy to read or use in common population genetics software packages.
+
+To filter the outputs of the previous steps, as well as reformat the data for other programs, we will run `populations`. It will also calculate summary statistics per population, and to do so requires and additional file that defines the populations. I have included a file called popmap, which defines all the samples as part of the same population called 1. I did this because it will run faster, but with your own data you can specify the population names or numbers in the second column to get population-specific estimates of summary statistics. 
+
+Take a look at popmap. Then run
+
+	populations -P ~/Desktop/GBS_Data/Stacks_Output/ -M ~/Desktop/GBS_Data/popmap -t 2 -r 1 -b 1 --fasta --plink --structure
+
+The output files are the ones that are not compressed. There is a FASTA file of all the loci, a file defining the haplotypes, files in the [PLINK](https://www.cog-genomics.org/plink2) and [STRUCTURE](http://pritchardlab.stanford.edu/structure.html) formats that we requested, and finally two files with summary statistics. Go through each and try to understand what they contain. More details are on the Stack website.
+
+Do you think the summary statistics, such as nucletide diversity (pi) and heterozygosity, look reasonable for a tree?
+
+
+###The whole basic *de novo* pipeline in one script
+The easiest way to run Stacks is to write one script that combines all the steps above. Here it is:
+
+	#!/bin/bash
+	
+	#1. RUN USTACKS
+	samples="SC1
+	SC6
+	SR3
+	SR6
+	TE3
+	TE11"
+	
+	i=1
+	for sample in $samples
+	do
+	   ustacks -t gzfastq -f ~/Desktop/GBS_Data/${sample}.fq.gz -o ~/Desktop/GBS_Data/Stacks_Output/ -i $i -m 3 -M 2 -p 2
+	   let "i+=1";
+	done
+	
+	#2. RUN CSTACKS
+	cstacks -b 1 -o ~/Desktop/GBS_Data/Stacks_Output -p 2 -n 2 -s ~/Desktop/GBS_Data/Stacks_Output/SC6 -s ~/Desktop/GBS_Data/Stacks_Output/SR6 -s ~/Desktop/GBS_Data/Stacks_Output/TE11
+	
+	#3. RUN SSTACKS
+	for sample in $samples
+	do
+	   sstacks -b 1 -c ~/Desktop/GBS_Data/Stacks_Output/batch_1 -s ~/Desktop/GBS_Data/Stacks_Output/${sample} -o ~/Desktop/GBS_Data/Stacks_Output -p 2 &>> ~/Desktop/GBS_Data/Stacks_Output/Log
+	done
+	
+	#4. RUN POPULATIONS
+	populations -P ~/Desktop/GBS_Data/Stacks_Output/ -M ~/Desktop/GBS_Data/popmap -t 2 -r 1 -b 1 --fasta --plink --structure
+
+I added a small change to `sstacks` that will append the log file with info for each sample instead of overwriting it (`&>> ~/Desktop/GBS_Data/Stacks_Output/Log`). 
+
+You can use this script as a foundation to build a "master" script.
+
+
+###Reference-based SNP calling pipeline
+The main difference between the reference based and *de novo* pipelines is that one needs to align the reads the the reference sequence first. This can be acheived with a short-read aligner, such as [Bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml), [BWA](http://bio-bwa.sourceforge.net/) (specifically, `bwa mem`), or [GSNAP](http://research-pub.gene.com/gmap/). Let's try it with Bowtie2.
+
+To prepare for Bowtie2 make an output directory `mkdir Bowtie2_Alignments`. Then, extract all the compressed FASTQ files with `gunzip`.
+
+While the files are extracting, try to understand the Bowtie2 command below by finding the relevant arguments in the [online manual](http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml). When the files are extracted, run Bowtie2 to align each file to the *Quercus lobata* reference transcriptome (there is no *Quercus* genome sequence yet!). I have already "indexed" the reference in Bowtie2 format for you, and it can be found in `~/Desktop/Genomes/bowtie2_indexed/Qlobata_transcriptome/`.
+
+	bowtie2 --very-sensitive-local --no-unal -p 2 -x /home/genomics/Desktop/Genomes/bowtie2_indexed/Qlobata_transcriptome/Qlobata_transcriptome -U SC1.fq -S ./Bowtie2_Alignments/SC1.sam
+
+Instead of running the command once for each file and waiting we can make a script using a `for` loop, as we did in the Stacks pipeline. Copy the following text into an empty text file and name it `Bowtie2.sh`.
+
+	#!/bin/bash
+
+	samples="SC1
+	SC6
+	SR3
+	SR6
+	TE3
+	TE11"
+
+	for sample in $samples
+	do
+	   bowtie2 --very-sensitive-local --no-unal -p 2 -x /home/genomics/Desktop/Genomes/bowtie2_indexed/Qlobata_transcriptome/Qlobata_transcriptome -U ${sample}.fq -S ./Bowtie2_Alignments/${sample}.sam
+	done
+	
+Then make the script you just wrote executable.
+
+	chmod +x Bowtie2.sh
+
+Run the script by typing
+
+	./Bowtie2.sh
+
+While its running, think about how to run the reference-based pipeline. What do you need to change in comparison to the *de novo* pipeline? 
+
+When it finishes, compress all the FASTQ files using `gzip *.fq` to save space. Then, take a look at one of the SAM files. Look up what each column means online.
+
+Now, on your own or with your neighbors, write a script to run the reference-based Stacks SNP calling pipeline starting with `pstacks` and ending with `populations`. You can use the *de novo* script above as a template. Have it save the results to a different output folder than the *de novo* pipeline output. I will walk around to answer questions. 
+
+When you have created your script, run it and then look at the output files. How do the results compare to the *de novo* pipeline that we did earlier? Why might they differ?
+
+
+###Other considerations
+For the basic pipelines there are a "wrapper" scripts available called [denovo_map.pl](http://creskolab.uoregon.edu/stacks/comp/denovo_map.php) and [ref_map.pl](http://creskolab.uoregon.edu/stacks/comp/ref_map.php) that allow you to do all the above steps at once. However, I do not recommend them because there are several other steps worth including and customizing that you will learn tomorrow. In addition, if you have a reference genome sequence you might be better off using the [GATK](https://www.broadinstitute.org/gatk/) SNP calling pipeline, which is a bit more rigorous.
