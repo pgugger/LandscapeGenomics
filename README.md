@@ -1,2 +1,2 @@
-# LandscapeGenomics
-Tutorials for bioinformatics and data analysis related to landscape genomics
+# *Bioinformatics for Landscape Genomics*
+Exercises for workshop at UNAM-Morelia, Mexico, October 2016
