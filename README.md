@@ -1,2 +1,2 @@
 # *Bioinformatics for Landscape Genomics*
-Exercises for workshop at UNAM-Morelia, Mexico, October 2016
+Exercises for workshop at UNAM-Morelia, Mexico, October 2017
