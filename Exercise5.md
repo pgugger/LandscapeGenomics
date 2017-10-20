@@ -51,13 +51,13 @@ It is also worth mentioning that the `snmf` as implemented in LEA offers the pot
 We can run LFMM simultaneously for all the climate variables contained in our climate data table (default) or one at a time. Run the following basic command
 
 	project = NULL
-	project = lfmm("snp.lfmm", "clim.env", K = 2, repetitions = 3, CPU = 16, iterations = 1000, burnin = 500, project = "new")
+	project = lfmm("snp.lfmm", "clim.env", K = 1, repetitions = 3, CPU = 16, iterations = 1000, burnin = 500, project = "new")
 
 The command specifies the file name with the SNP data, the "best" number of clusters that we inferred above, the number of repetitions of the model to run, the number of processors to use, and the number of iterations and burn-in. Each can be adjusted accordingly, but you would likely want to run 5-10 repetitions and increase the iterations and burnin (perhaps 10-fold).
 
 When the analysis finishes, we need to combine the data from the three repetitions and compute new calibrated *P*-values. To do that, first extract the *z*-scores for all repetitions for a given climate variable, then take the median. This can be done using the LEA function `z.scores` and the base function `apply` to take the median for each locus. Here is an example for the association tests with Pdry:
 
-	z.pdry = z.scores(project, K = 2, d = 1)
+	z.pdry = z.scores(project, K = 1, d = 1)
 	z.pdry <- apply(z.pdry, 1, median)
 
 Next, we need to calculate lambda (the "genomic inflation factor"), which is commonly used for calibration of *P*-values. However, it is often considered too conservative, so some suggest using a value lower than lambda for the calibration. Lambda is calculated from the median of the median *z*-scores (from above) and a chi-squared distribution for each set of associations:
@@ -71,7 +71,7 @@ The calibrated or "adjusted" *P*-values are then calculated as follows:
 	
 Now, repeat this correction procedure with the other three climate variables.
 	
-	z.pseas = z.scores(project, K = 2, d = 2)
+	z.pseas = z.scores(project, K = 1, d = 2)
 	z.pseas <- apply(z.pseas, 1, median)
 	lambda.pseas = median(z.pseas^2)/qchisq(0.5, df = 1)
 	p.pseas.adj = pchisq(z.pseas^2/lambda.pseas, df = 1, lower = FALSE)
