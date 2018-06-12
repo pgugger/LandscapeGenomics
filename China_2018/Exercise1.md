@@ -6,7 +6,7 @@ When you get your Illumina data, it will either come in QSEQ or FASTQ files (the
 
 Log in to the cluster with `ssh` using the Terminal on a Mac or PuTTY on Windows. Type the following and enter your password
 
-	ssh -p 60307 username@132.247.186.44
+	ssh -p 22 username@server.address
 	
 Navigate to the folder on the Desktop called "QSEQ_Data", and list the files in the folder. Remember `cd` and `ls`. Typically, Illumina data are given in a series of files, usually in multiples of 48 or 96, that are compressed (.gz). I have given you just two.
 
