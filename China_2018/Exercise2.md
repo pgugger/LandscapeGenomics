@@ -128,9 +128,9 @@ Finally, let's look more carefully at the `populations` [manual](http://catchenl
 
 Then there are a few options about how to report summary statistics that I do not typically use. Instead, I use other population genetics software. Finally, you can choose which output file formats you would like, so you can do anaylses in other programs (VCF is useful).
 
-Edit your `populations` from above command by adding `--write_single_snp`, `-p`, `--lnl_lim`, but do not add `-s` or `-B` today. Do not run yet, but here is how the new `populations` command might look:
+Edit your `populations` from above command by adding `--write_single_snp`, `-p`, `--lnl_lim`, but do not add `-B` today. Do not run yet, but here is how the new `populations` command might look:
 
-	populations -P ~/Workshop/GBS_Data/Stacks_Output/ -M ~/Workshop/GBS_Data/popmap -t 16 -r 0.8 -p 2 --lnl_lim -50 --write_single_snp --fasta_loci --plink --structure --vcf
+	populations -P ~/Workshop/GBS_Data/Stacks_Output/ -M ~/Workshop/GBS_Data/popmap -t 8 -r 0.8 -p 2 --lnl_lim -50 --write_single_snp --fasta_loci --plink --structure --vcf
 
 
 ### The whole *de novo* pipeline in one script
