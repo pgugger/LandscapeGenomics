@@ -160,7 +160,7 @@ Once you have tested all the parts of the pipeline and added other arguments dis
 	i=1
 	for sample in $samples
 	do
-	   ustacks -t gzfastq -f ~/Workshop/GBS_Data/${sample}.fq.gz -o ~/Workshop/GBS_Data/Stacks_Output/ -i $i -m 3 -M 2 -p 16 -d --max_locus_stacks 3 --model_type bounded --bound_high 0.05
+	   ustacks -t gzfastq -f ~/Workshop/GBS_Data/${sample}.fq.gz -o ~/Workshop/GBS_Data/Stacks_Output/ -i $i -m 3 -M 2 -p 8 -d --max_locus_stacks 3 --model_type bounded --bound_high 0.05
 	   let "i+=1";
 	done
 	
@@ -176,7 +176,7 @@ Once you have tested all the parts of the pipeline and added other arguments dis
 	#5. RUN GSTACKS
 	gstacks -P ~/Workshop/GBS_Data/Stacks_Output -M ~/Workshop/GBS_Data/popmap -t 8
 	
-	#4. RUN POPULATIONS
+	#6. RUN POPULATIONS
 	populations -P ~/Workshop/GBS_Data/Stacks_Output/ -M ~/Workshop/GBS_Data/popmap -t 8 -r 0.8 -p 2 --lnl_lim -50 --write_single_snp --fasta_loci --plink --genepop --structure --vcf
 
 
