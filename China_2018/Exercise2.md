@@ -1,4 +1,4 @@
-## EXERCISE 2: Running the basic Stacks pipeline to call SNPs
+## EXERCISE 2: Running the Stacks pipeline to call SNPs
 
 [Stacks](http://catchenlab.life.illinois.edu/stacks/) is a sophisticated pipeline for identifying SNPs from RAD-Seq or GBS data. It can be used with or without reference genome, although it is most popular when a reference is not available as in most non-model organisms. There is also a popular [Google Group](https://groups.google.com/forum/#!forum/stacks-users) for asking questions and troubleshooting. For this exercise, we will the basic *de novo* SNP calling pipeline. We will start with the data we converted to FASTQ in Exercise 1 to demonstrate the quality filtering portion of the pipeline, but then we will switch to some real samples from *Quercus rugosa* for the rest (Martins *et al.* accepted *Evol. Appl.*).
 
