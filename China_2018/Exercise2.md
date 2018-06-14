@@ -121,14 +121,14 @@ Browse the webpages for `cstacks` and `sstacks`. Do you see anything you might a
 Finally, let's look more carefully at the `populations` [manual](http://catchenlab.life.illinois.edu/stacks/comp/populations.php). Here are some potentially important arguments to consider:
 
 * `--write_single_snp` to output only one SNP per fragment. This could be a good idea to minimize the number of closely linked loci that might be in linkage disequilibrium.
-* `-r` indicates the proportion of samples for which a a locus must have a genotype call and was included above already. A value of 0.8 is recommended (see [Paris *et al.* 2017](https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/2041-210X.12775)).
-* `-p` to keep only loci found in a at least a certain number of populations. It is recommended to use `-p` and `-r` in combination instead of `-m`. 
+* `-r` indicates the proportion of samples for which a a locus must have a genotype call and was included above already. A value of 0.8 is recommended but this could depend on many factors (see [Paris *et al.* 2017](https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/2041-210X.12775)).
+* `-p` to keep only loci found in a at least a certain number of populations. 
 * `-B` to specify a file with loci that you do not want to include in the output, for example, if you looked at them and think they are not accurate or if it is a locus that doesn't interest you for some reason.
 * `--lnl_lim` to filter low-quality or unlikely loci. Higher log-likelihoods (less negative) are better. Be careful with this setting; I have noticed that setting filters out many good SNPs.
 
 Then there are a few options about how to report summary statistics that I do not typically use. Instead, I use other population genetics software. Finally, you can choose which output file formats you would like, so you can do anaylses in other programs (VCF is useful).
 
-Edit your `populations` from above command by adding `--write_single_snp`, `-p`, `--lnl_lim`, but do not add `-B` today. Do not run yet, but here is how the new `populations` command might look:
+Edit your `populations` command from above by adding `--write_single_snp`, `-p`, `--lnl_lim`, but do not add `-B` today. Do not run yet, but here is how the new `populations` command might look:
 
 	populations -P ~/Workshop/GBS_Data/Stacks_Output/ -M ~/Workshop/GBS_Data/popmap -t 8 -r 0.8 -p 2 --lnl_lim -50 --write_single_snp --fasta_loci --plink --structure --vcf
 
