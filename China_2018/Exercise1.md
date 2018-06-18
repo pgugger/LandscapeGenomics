@@ -53,7 +53,7 @@ When the program finishes, open the "QSEQ_Data" folder by double-clicking with t
 
 Let's say you want to know how much contamination is in your data. You might try to search (`grep`) the FASTQ for part of the adapter sequence and count (`-c`) how many sequences have it.
 
-	grep -c 'AGATCGGAAGAGCGGT' s_3_1_1101.fq
+	grep -c 'GATCGGAAGAGCGGTTCAGCAGG' s_3_1_1101.fq
 
 However, what if there are errors, so you don't have an exact match to the adapter, and what if there are other contaminants like your own DNA or another organism? One way to get a rough estimate is to use [FastQ_Screen](http://www.bioinformatics.babraham.ac.uk/projects/download.html#fastqscreen), which will align your reads to specified genomes or sequences).
 
