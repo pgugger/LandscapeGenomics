@@ -20,7 +20,7 @@ Take a quick look at the output (file names with "012") to understand what each 
 	paste <(echo "ID" | cat - snp.012.indv) <(echo "" | cat header - snp.temp) > snp.forR
 	rm header snp.temp
 
-Don't worry about the details of these commands, but someday you may find it useful to learn them. To briefly summarize: we `cut` to keep from the second column to last column of snp.012, then replaced (`sed`) the missing data encoded as -1 to be encoded as NA (assuming we allowed missing data); then rearranged the list of SNP positions into a single tab-separated row to create a header; then `paste`d the SNP IDs with the header and SNP data. View the resulting file with `less -S`. When finished copy it to the `GF_GDM` folder with `cp snp.forR ~/Workshop/GF_GDM/`.
+Don't worry about the details of these commands, but someday you may find it useful to learn them. To briefly summarize: we `cut` to keep from the second column to last column of snp.012, then replaced (`sed`) the missing data encoded as -1 to be encoded as NA (assuming we allowed missing data); then rearranged the list of SNP positions into a single tab-separated row to create a header; then `paste`d the SNP IDs with the header and SNP data. View the resulting file with `less -S`. When finished copy it to the `GF_GDM` folder with `cp snp.forR ~/Workshop/GF/`.
 
 Now let's move to R by simply typing `R` in the command line. You are now in the command line environment of R, not the Linux bash shell itself. Some of you may be able to connect with the graphical interface of RStudio, or you could download the files and use the R graphical interface on your own computer, but in either case the commands will be the same.
 	
