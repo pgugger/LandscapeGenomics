@@ -118,7 +118,7 @@ We can also make plots of turnover functions for individual loci:
 	plot(gf, plot.type = "C", imp.vars = by.importance, show.overall = F, legend = T, leg.posn = "topleft", leg.nspecies = 5, cex.lab = 0.7, cex.legend = 0.4, cex.axis = 0.6, line.ylab = 0.9, par.args = list(mgp = c(1.5, 0.5, 0), mar = c(2.5, 1, 0.1, 0.5), omi = c(0, 0.3, 0, 0)))
 	dev.off()
 
-Each line within each panel represents allelic change at a single SNP. Notice that in each panel some SNPs show very steep changes along the environmental gradient. One might consider these SNPs as candidates for involvement in local adaptation along the gradient, as we will discuss tomorrow. This approach to "outlier" detection is still being tested, but Fitzpatrick & Keller (2015) show a promising example.
+Each line within each panel represents allelic change at a single SNP. Notice that in each panel some SNPs show very steep changes along the environmental gradient. One might consider these SNPs as candidates for involvement in local adaptation along the gradient. This approach to "outlier" detection is still being tested, but Fitzpatrick & Keller (2015) show a promising example.
 
 Several other plots and tables can be output from `gradientForest`. I recommend generating these with your own data sets, but we will skip them today.
 
