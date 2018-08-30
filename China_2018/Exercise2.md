@@ -130,7 +130,7 @@ Then there are a few options about how to report summary statistics that I do no
 
 Edit your `populations` command from above by adding `--write_single_snp`, `-p`, `--lnl_lim`, but do not add `-B` today. Do not run yet, but here is how the new `populations` command might look:
 
-	populations -P ~/Workshop/GBS_Data/Stacks_Output/ -M ~/Workshop/GBS_Data/popmap -t 8 -r 0.8 -p 2 --lnl_lim -50 --write_single_snp --fasta_loci --plink --structure --vcf
+	populations -P ~/Workshop/GBS_Data/Stacks_Output/ -M ~/Workshop/GBS_Data/popmap -t 8 -r 0.8 -p 2 --lnl_lim 50 --write_single_snp --fasta_loci --plink --structure --vcf
 
 
 ### The whole *de novo* pipeline in one script
@@ -177,7 +177,7 @@ Once you have tested all the parts of the pipeline and added other arguments dis
 	gstacks -P ~/Workshop/GBS_Data/Stacks_Output -M ~/Workshop/GBS_Data/popmap -t 8
 	
 	#6. RUN POPULATIONS
-	populations -P ~/Workshop/GBS_Data/Stacks_Output/ -M ~/Workshop/GBS_Data/popmap -t 8 -r 0.8 -p 2 --lnl_lim -50 --write_single_snp --fasta_loci --plink --genepop --structure --vcf
+	populations -P ~/Workshop/GBS_Data/Stacks_Output/ -M ~/Workshop/GBS_Data/popmap -t 8 -r 0.8 -p 2 --lnl_lim 50 --write_single_snp --fasta_loci --plink --genepop --structure --vcf
 
 
 **IMPORTANT:** Run your script with all 16 samples, and make sure it finishes successfully. Before running clear you Stacks_Output folder of the previous outputs (`rm ~/Workshop/GBS_Data/Stacks_Output/*`). It is important to complete this step today because we will use the results tomorrow. However, this script will take a long time (~2 hours), so I recommend letting it run beyond the end of today's workshop, if necessary. To do that, first open a new screen within your terminal by typing `screen`. This screen will remain active even if you disconnect from the server or close your laptop. To get out of ("detach") the screen but not close it, use `CTRL a d`; to return to the same screen, type `screen -r`; to close a screen completely, type `exit` while in the screen. For now, you can just open a screen and run your script in it and worry about the rest tomorrow.
