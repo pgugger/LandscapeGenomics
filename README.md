@@ -1,2 +1,2 @@
 # *Bioinformatics for Landscape Genomics*
-Exercises for workshop at UNAM-Morelia, Mexico, October 2017
+Exercises for workshop organized by year, taught at UNAM-Morelia, Mexico unless otherwise noted in the folder name. Topics include Linux basics, Illumina data quality assessment, SNP calling with Stacks de novo pipeline, and analyzing data with landscape analyses such as GDM, GF, LFMM, or other approaches. I recommend using the most recent year as it reflects the latest versions of software.
