@@ -1,10 +1,10 @@
-##EXERCISE 4: Environmental association analysis
+## EXERCISE 4: Environmental association analysis
 
 Once you have your SNPs from Stacks (or another program), you are ready for data analysis. Here, I will show two environmental association analyses with different purposes. The first, called redundancy analysis, is an ordination method that can be used to understand what geographic or environmental factors are associated with the overall patterns of genetic variation on the landscape. The second approach uses linear mixed modeling to identify loci that are exceptionally associated with the environment and thus potential targets of natural selection along the gradient. In each case, there are other methods that should be considered. In addition to redundancy analysis, one should also consider the R package [BEDASSLE](http://cran.r-project.org/web/packages/BEDASSLE/index.html), and in addition to linear mixed models, one should also consider [BayEnv2](http://gcbias.org/bayenv/) and perhaps *F*st outlier methods such as [BayeScan](http://cmpg.unibe.ch/software/BayeScan/).
 
-###Redundancy analysis
+### Redundancy analysis
 
-####Basic redundancy analysis
+#### Basic redundancy analysis
 *Redundancy analysis* (RDA) is a form of constrained ordination that examines how much of the variation in one set of variables explains the variation in another set of variables. It is the multivariate analog of simple linear regression. Redundancy analysis is based on similar principles as principal components analysis and thus makes similar assumptions about the data. It is appropriate when the expected relationship between dependent and independent variables is linear (*e.g.* climate and allele frequency). If the expected relationship is Gaussian (*e.g.* climate and species abundance), then canonical correspondence analysis is more appropriate, which can be implemented as described below for redundancy analysis, but by replacing all `rda` functions with `cca`. We will use the [VEGAN package](http://cran.r-project.org/web/packages/vegan/index.html).
 
 Open RStudio by double-clicking the icon on the Desktop. In the top left, there is a space to create a script. Let's use that instead of the command line in the bottom left. You can Run each line of the script as you type or enter this whole section and then Run.
@@ -41,7 +41,7 @@ Open RStudio by double-clicking the icon on the Desktop. In the top left, there 
 
 	The black (open) points are each individual (genotypes) displayed in RDA space and the blue vectors show how climate variables fall along that RDA space. The longest vectors along each RDA axis are most important in explaining variation in genotypes along that axis. Which climate variables are most important in these data?
 
-####Partial redundancy analysis
+#### Partial redundancy analysis
 
 In the previous section, we found a significant relationship among climate and genetic variation, and we identified climate variables that might be most important in explaining that relationship. However, climate and genotype are confounded by geographic location. Nearby locations have similar climate and nearby locations might have similar genotypes if mating is more likely locally/regionally. We can statistically control for this fact by doing a *partial redundancy analysis*, where geography (latitude and longitude) are specified as a third matrix, the *conditioned matrix*. The analysis then "controls for," "partials out," or "conditions on" geographic location. Geography could be defined simply as latitude and longitude or could be made more complex with polynomials (I use up to third order polynomials, normally) or other approaches such as Moran's Eigenvector Maps (MEM or PCNM) can be used. Here, we will keep it simple.
 
@@ -57,7 +57,7 @@ In the previous section, we found a significant relationship among climate and g
 How do the results of this analysis differ from the previous section What does that suggest?
 
 
-####Partitioning variance components
+#### Partitioning variance components
 Now that we know climate significantly explains genetic variation, even after controlling for spatial coordinates, we might want to know how much of the genetic variation is uniquely explained by climate, how much is uniquely explained by geography, and how much is explained by some joint effect of the two. 
 
 1. To partition variance, we need to run three models: a full model with all climate and geographic variables as explanatory variables, a partial model in which geography explains genetic data conditioned on climate, and a partial model where climate explains genetic data conditioned on geography. We already did the last one, so let's do the first two.
@@ -84,7 +84,7 @@ Now that we know climate significantly explains genetic variation, even after co
 5. Finally, express the variances as proportions of the total explainable variance in the table.
 
 
-####Useful links
+#### Useful links
 Oksanen J. [vegan: Community Ecology Package.](http://cran.r-project.org/web/packages/vegan/index.html) 
 
 Oksanen J (2012) [Constrained ordination: tutorial with R and vegan.](http://cc.oulu.fi/~jarioksa/opetus/metodi/sessio2.pdf)
@@ -117,7 +117,7 @@ Smouse PE, Williams RC (1982) Multivariate analysis of HLA-disease associations.
 Westfall RD, Conkle MT (1992) Allozyme markers in breeding zone designation. *Population Genetics of Forest Trees* 42, 279-309.
 
 
-###Linear mixed model (EMMAX)
+### Linear mixed model (EMMAX)
 Identifying genetic variation involved in adaptation to local environments in natural populations is an important topic in conservation genetics. Population genetic variation is influenced by demography, mating patterns, and natural selection, each of which is shaped by the environment. Theoretically, demographic changes and gene flow ("neutral" processes) affect genetic variation throughout the genome, whereas natural selection affects a small number of genes. To disentangle which parts of the genome are under natural selection by the environment, we can use genome-wide data sets to identify genes that are extremely associated with environmental variables after accounting for the background association of genetic variation with the environment due to demographic and mating patterns. There are several approaches to *environmental association analysis* (*e.g.* BayEnv2), but here we borrow an approach developed in another context. 
 
 [EMMAX](http://genome.sph.umich.edu/wiki/EMMAX) is an implementation of a *linear mixed model* originally developed to associate genetic variation (*e.g.* SNPs) with phenotypic variation after accounting for kinship among individuals (**y** = *X*B + *Z*u + **e**). EMMAX empirically estimates pairwise kinship using all the input genetic variation, which is then factored out in testing the association of individual genetic variants with phenotypic variation. The resulting significant associations are candidate variants that may play a role in the genetic basis of the phenotype, when the phenotypic variation is measured under a common environment. EMMAX is one of many approaches to perform *genome-wide association analysis* (GWAS). Others include GEMMA and TASSEL. EMMAX makes simplifying assumptions to efficiently calculate the variance components, which allows for rapid testing with large sample sizes. 
@@ -164,7 +164,7 @@ Here, we will instead use this approach as a means of testing for SNPs under sel
 Now that we have a list of candidate SNPs under selection by climate, we can further investigate their genomic context, the function of the gene in which they might be found, and whether or not the SNPs lead to amino acid sequence changes, etc.
 
 
-####Useful references
+#### Useful references
 Coop G, Witonsky D, Di Rienzo A, Pritchard JK (2010) Using environmental correlations to identify 
 loci underlying local adaptation. *Genetics* 185, 1411-1423.
 
