@@ -1,6 +1,6 @@
-##EXERCISE 1: Preparing sequence data files
+## EXERCISE 1: Preparing sequence data files
 
-###Viewing sequence files
+### Viewing sequence files
 
 When you get your Illumina data, it will either come in QSEQ or FASTQ files (the latter is becoming more common). Let's assume you just got your results in QSEQ format.
 
@@ -17,7 +17,7 @@ We can find out how many lines the file has, and therefore how many reads it has
 	zcat s_3_1_1101_qseq.txt.gz | wc -l
 
 
-###Converting from QSEQ to FASTQ
+### Converting from QSEQ to FASTQ
 
 To convert formats we will use a PERL script I downloaded that requires the files be extracted first. Let's extract both at the same time
 
@@ -36,7 +36,7 @@ This will take a while. In the meantime, you can open another Terminal and run t
 When it finishes, navigate to the FASTQ folder and view one of the FASTQ files with `less`.
 
 
-###Assessing quality with FastQC
+### Assessing quality with FastQC
 
 [FastQC](http://www.bioinformatics.babraham.ac.uk/projects/download.html#fastqc) is a convenient program for summarizing base call quality scores, GC content, possible contamination, and other information. Its easy to run but can be slow.
 
@@ -45,7 +45,7 @@ When it finishes, navigate to the FASTQ folder and view one of the FASTQ files w
 When the program finishes, open the "QSEQ_Data" folder by double-clicking with the mouse. Then open the HTML file by double-clicking. How do the Phred scores look at each base?
 
 
-###Assessing possible contaminants with FastQ_Screen
+### Assessing possible contaminants with FastQ_Screen
 
 Let's say you want to know how much contamination is in your data. You might try to search the FASTQ for part of the adapter sequence and count how many sequences have it.
 
