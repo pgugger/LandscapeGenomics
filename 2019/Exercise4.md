@@ -39,8 +39,11 @@ Load the SNP data and the LFMM results from yesterday.
 
 First, we can see examples of which rows represent significant LFMM associations:
 
-	which(lfmm.results$q.pdry < 0.01 & abs(lfmm.results$z.pdry) > 2, )  #Just Pdry
-	which( (lfmm.results$q.pdry < 0.01 & abs(lfmm.results$z.pdry) > 2 ) | (lfmm.results$q.pseas < 0.01 & abs(lfmm.results$z.pseas) > 2) | (lfmm.results$q.tmin < 0.01 & abs(lfmm.results$z.tmin) > 2) | (lfmm.results$q.tseas < 0.01 & abs(lfmm.results$z.tseas) > 2), )  #Any climate variable
+	#Just Pdry
+	which(lfmm.results$q.pdry < 0.01 & abs(lfmm.results$z.pdry) > 2, )  
+	
+	#Any climate variable
+	which( (lfmm.results$q.pdry < 0.01 & abs(lfmm.results$z.pdry) > 2 ) | (lfmm.results$q.pseas < 0.01 & abs(lfmm.results$z.pseas) > 2) | (lfmm.results$q.tmin < 0.01 & abs(lfmm.results$z.tmin) > 2) | (lfmm.results$q.tseas < 0.01 & abs(lfmm.results$z.tseas) > 2), )  
 
 Now that we know which rows, we can select the corresponding columns in the `snp` data table. Recall that the order of the rows in `lfmm.results` is the same as the order of the columns in `snp.forR`. I will proceed with all the putatively significant SNPs, starting by saving the list of row numbers as a new object:
 
@@ -58,14 +61,14 @@ We already prepared the climate point data yesterday as `clim.points`, which sho
 
 	clim.points <-read.table("clim.points", header=T)
 
-GF will also utilize the climate layers for projecting onto maps, so recall that these files are in `~/Workshop/Climate_Data`. However, we should crop these to focus only on our study area and save them as a new object. First, load and stack the climate layer data:
+GF will also utilize the climate layers for projecting onto maps, so recall that these files are in `~/Workshop/Climate_Data`. However, we should crop these to focus only on our study area and save them as a new object. First, load and stack the climate layer data as we did yesterday:
 
 	library(raster)
 	library(rgdal)
 	clim.list <- dir("~/Workshop/Climate_Data/", full.names=T, pattern='.tif')  
 	clim.layer <-  stack(clim.list)  #stacks the layers into a single object
 
-To crop the climate data layers to just the area of interest, I define an extent with minimum and maximum longitude and minimum and maximum latitude and then use the `crop` function.
+To crop the climate data layers to just the area of interest, I defined an extent with minimum and maximum longitude and minimum and maximum latitude and then use the `crop` function.
 
 	extent <- c(-104, -96, 18, 22) 
 	clim.layer.crop <- crop(clim.layer, extent)
@@ -103,7 +106,7 @@ Running GF involves only one command:
 
 	gf <- gradientForest(cbind(env.gf, snp), predictor.vars=colnames(env.gf), response.vars=colnames(snp), ntree=500, maxLevel=maxLevel, trace=T, corr.threshold=0.50)
 
-The input is the combined climate, spatial and SNP data as input (`cbind(env.gf, snp)`), and the subsequent parts of the command define which variables are predictors and response variables, as well as a number of other parameters that I have left as suggested. GF will take ~30 minutes to run. In the meantime, read about the various settings or how the model works. When it finishes, there will be warnings about having less than five values for response variables, which is because we have only three: 0, 1, or 2. You can ignore them.
+The input is the combined climate, spatial, and SNP data as input (`cbind(env.gf, snp)`), and the subsequent parts of the command define which variables are predictors and response variables, as well as a number of other parameters that I have left as suggested. GF will take ~30 minutes to run. In the meantime, read about the various settings or how the model works. When it finishes, there will be warnings about having less than five values for response variables, which is because we have only three: 0, 1, or 2. You can ignore them.
 
 We can plot bar graphs depicting the importance of each spatial and climate variable.
 
@@ -133,14 +136,14 @@ Each line within each panel represents allelic change at a single SNP. Notice th
 
 Several other plots and tables can be output from `gradientForest`. I recommend generating these with your own data sets, but we will skip them today.
 
-One of the useful features of these models is that the results can be readily projected spatially across a landscape that was not necessarily completely sampled. The mapping can be a little tricky, but first we must extract the climate data for **all** the cells in the climate data layer and remove missing data.
+One of the useful features of these models is that the results can be readily projected spatially across a landscape that was not necessarily completely sampled. The mapping can be a little tricky, but first we must extract the climate data for *all* the cells in the climate data layer and remove missing data.
 
 	clim.land <- extract(clim.layer.crop, 1:ncell(clim.layer.crop), df = TRUE)
 	clim.land <- na.omit(clim.land)
 
 Then, we can use the `predict` function to "predict" the allelic turnover across the whole landscape using our fitted model (`gf`) and the climate values on the landscape (`clim.land`).
 
-	pred <- predict(gf, clim.land[,-1])  #note the removal of the cell ID column with [,-1])
+	pred <- predict(gf, clim.land[,-1])  #note the removal of the cell ID column with [,-1]
 
 These predictions then need to be converted to a color scale for mapping. One way is to use principal components analysis (PCA) on the predictions and use the first three axes to define red-green-blue color scales, respectively. After the values are defined in color space, they can be stacked and mapped. 
 
@@ -187,7 +190,7 @@ One way to compare the results is to visually review the output plots side by si
 
 More careful comparison warrants new plots, especially for turnover functions and maps. For example, the allelic turnover functions of the adaptive SNPs and the complete SNP data set can be displayed on the same plot. We would expect climate-adaptive SNPs to be more strongly associated with environmental gradients than the full SNP set. First, we need to extract the cumulative importance data for predictors of interest and then plot. For now, let's just look at one spatial variable (PCNM1) and one environmental variable (Pdry), but you can feel free to plot more on your own.
 
-	#Extract cumulative importance data from GF results. Note that these commands retrieve all the predictor, despite specifying only one. Also note that you could set type="Species" if you want to extract data for individual loci.
+	#Extract cumulative importance data from GF results. Note that these commands retrieve all the predictors, despite specifying only one. Also note that you could set type="Species" if you want to extract data for individual loci.
 	gf.cumimp <- cumimp(gf, predictor="PCNM1", type="Overall")
 	gf.adaptive.cumimp <- cumimp(gf.adaptive, predictor="PCNM1", type="Overall" )
 	
@@ -205,9 +208,9 @@ More careful comparison warrants new plots, especially for turnover functions an
 	
 How does adaptive variation compare to the background? Is it what you expected, and how would you interpret these results?
 
-A second potentially interesting comparison is to map where adaptive genetic variation deviates most from landscape patterns of background genetic variation. The approach will be to compare the PCAs that you generated from predictions with the all-SNP and adaptive-SNP models using Procrustes rotation. Recall the following commands that you should have already run above:
+A second potentially interesting comparison is to map where adaptive genetic variation deviates most from landscape patterns of background genetic variation. The approach will be to use Procrustes rotation to compare the PCAs that you generated from predictions based on the all-SNP and adaptive-SNP models. Recall the following commands that you should have already run above:
 
-	#Do not run
+	#Do not run (assuming you successfully ran above)
 	pred <- predict(gf, clim.land[,-1])  
 	pca <- prcomp(pred.gf.all, center=T, scale.=F)
 	
@@ -219,10 +222,13 @@ To run the Procrustes rotation, we simply provide the two PCAs for comparison. T
 	diff.procrustes = procrustes(pca.adaptive, pca, scale=TRUE, symmetrical=FALSE)
 	resids = residuals(diff.procrustes)
 	
-Finally, we can generate a raster layer based on the residuals, choosing any prederred color scale, and then plot as a map.
+Finally, we can generate a raster layer based on the residuals, choosing any color scale, and then plot as a map.
 
-	rastProc <- clim.layer.crop$Pseas  #Specify raster properties based on an existing one
-	rastProc[clim.land$ID] <- resids  #Assign residuals to raster cells
+	#Specify raster properties based on an existing one
+	rastProc <- clim.layer.crop$Pseas  
+	
+	#Assign residuals to raster cells
+	rastProc[clim.land$ID] <- resids  
 	
 	#Map the results
 	pdf("ProcrustesMap.pdf")
@@ -263,7 +269,7 @@ Finally, we are ready to prepare the raster of differences and map.
 	
 	#Plot with color scale of choice
 	pdf("GeneticOffset.pdf")
-	plot(rast.offset, col=rev( rainbow( 99, start=0,end=0.2 )))
+	plot(rast.offset, col=rev( rainbow( 99, start=0, end=0.2 )))
 	points(clim.points$Longitude, clim.points$Latitude)
 	dev.off()
 	
