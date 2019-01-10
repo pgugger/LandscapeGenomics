@@ -104,7 +104,7 @@ Some of you may also be interested to know that this structure analysis (`snmf`)
 	plot(-log10(pvalues), pch = 19, col = "blue", cex = .7, xlab = "SNP (ordered by contig arbitrarily)")
 	dev.off()
 
-This type of plot is a so-called *Manhattan plot* summarizing the significance (-log10(*P*)) of differentiation among clusters on the *y*-axis. The *x*-axis is usually ordered by chromosomal positions if you know the sequence of your organism's genome, but here we do not, so they are ordered arbitrarily in the same order that Stacks ordered them in the catalog. If you have time later, you could compare the outliers in this analysis to those that you get with the LFMM environmental associations below.
+This type of plot is a so-called *Manhattan plot* summarizing the significance (-log<sub>10</sub>(*P*)) of differentiation among clusters on the *y*-axis. The *x*-axis is usually ordered by chromosomal positions if you know the sequence of your organism's genome, but here we do not, so they are ordered arbitrarily in the same order that Stacks ordered them in the catalog. If you have time later, you could compare the outliers in this analysis to those that you get with the LFMM environmental associations below.
 
 ### Latent factor mixed modeling (LFMM)
 
@@ -160,7 +160,7 @@ Once we are convinced that the model is behaving well, we can move on. But, ther
 
 How does the number of significant tests based on *Q*-values (e.g., `sum(q.pdry<0.05)`) compare to the *P*-values (e.g., `sum(p.pdry.adj<0.05)`)?
 
-A common way to visually summarize large numbers of association tests is using Manhattan plots (as we saw earlier with the outliers based on differentiation). All we need to do is plot -log<sub>10</sub>(Q) for each of the sets of association tests
+A common way to visually summarize large numbers of association tests is using Manhattan plots (as we saw earlier with the outliers based on differentiation). All we need to do is plot -log<sub>10</sub>(*Q*) for each of the sets of association tests
 
 	pdf("LFMM_Manhattan.pdf")
 	par(mfrow = c(4,1))
