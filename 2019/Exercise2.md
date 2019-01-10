@@ -4,11 +4,11 @@
 
 ### Demultiplexing and removing low quality reads
 
-Stacks provides a convenient tool called [process_radtags](http://catchenlab.life.illinois.edu/stacks/comp/process_radtags.php) for simultaneously demultiplexing and removing low quality reads and adapter contamination. To demultiplex (separate the reads into new files by sample), it requires a file that lists all the barcodes, which I included here as barcodes.txt. First, navigate to `~/Workshop/Illumina_Data/` and `mkdir Processed_Radtags`.
+Stacks provides a convenient tool called [process_radtags](http://catchenlab.life.illinois.edu/stacks/comp/process_radtags.php) for simultaneously demultiplexing and removing low quality reads and adapter contamination. To demultiplex (separate the reads into new files by sample), it requires a file that lists all the barcodes, which I included here as barcodes.txt. First, navigate to `~/Workshop/Test_Data/` and `mkdir Processed_Radtags`.
 
 Now run the `process_radtags` command as follows (all one line).
 
-	process_radtags -p ~/Workshop/Illumina_Data/FASTQ/ -o ~/Workshop/Illumina_Data/Processed_Radtags/ -b barcodes.txt -e apeKI --adapter_1 GATCGGAAGAGCGGTTCAGCAGGAATGCCGAGACCGATCTCGTATGCCGTCTTCTGCTTG --adapter_mm 2 -r -c -q -s 10
+	process_radtags -p ~/Workshop/Test_Data/ -o ~/Workshop/Test_Data/Processed_Radtags/ -b barcodes.txt -e apeKI --adapter_1 GATCGGAAGAGCGGTTCAGCAGGAATGCCGAGACCGATCTCGTATGCCGTCTTCTGCTTG --adapter_mm 2 -r -c -q -s 10
 
 Every command in Stacks has many options, so it's best to construct each with the help on the online manual. Let's dissect this command while it's running. With `-p` we indicate the directory with the sequence data, `-o` the output directory, `-b` the barcode file to use for demultiplexing, `-e` the restriction enzyme so it knows what cut site sequence to expect after the barcode, `--adapter_1` to indicate the adapter sequence to identify and remove contaminants, `--adapter_mm` the number of mismatches allowed between the read and real adapter sequence, `-r` to "rescue" (keep) a sequence if there is one error in the barcode, `-c` to remove reads with uncalled bases (N), and `-q` to discard reads with low quality scores which are defined by a sliding window if the average score is less than `-s`. Take a minute to review the `process_radtags` [webpage](http://catchenlab.life.illinois.edu/stacks/comp/process_radtags.php) and see if you understand each part or find additional arguments that could be useful.
 
