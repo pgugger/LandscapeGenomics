@@ -4,7 +4,7 @@
 
 ### Demultiplexing and removing low quality reads
 
-Stacks provides a convenient tool called [process_radtags](http://catchenlab.life.illinois.edu/stacks/comp/process_radtags.php) for simultaneously demultiplexing and removing low quality reads. To demultiplex (separate the reads into new files by sample), it requires a file that lists all the barcodes, which I included here as barcodes.txt. First, navigate to `~/Workshop/Illumina_Data/` and `mkdir Processed_Radtags`.
+Stacks provides a convenient tool called [process_radtags](http://catchenlab.life.illinois.edu/stacks/comp/process_radtags.php) for simultaneously demultiplexing and removing low quality reads and adapter contamination. To demultiplex (separate the reads into new files by sample), it requires a file that lists all the barcodes, which I included here as barcodes.txt. First, navigate to `~/Workshop/Illumina_Data/` and `mkdir Processed_Radtags`.
 
 Now run the `process_radtags` command as follows (all one line).
 
