@@ -198,8 +198,12 @@ Determining the function or genomic context of interesting loci is challenging i
 
 First, examine one or two significant SNPs more closely by finding the sequence of the locus it comes from in the FASTA file that was previously generated in the Stacks (see `~/Worskhop/GBS_Data/Stacks_Output/populations.loci.fa`). Before exiting R, extract portions of the results table with significant SNPs and pick according to your interests, *e.g.*:
 
-	lfmm.results[ which(lfmm.results$q.pdry < 0.01 & abs(lfmm.results$z.pdry) > 2), ]  #significant relationship with one specific climate variable
-	lfmm.results[ which(lfmm.results$q.pdry < 0.01 & abs(lfmm.results$z.pdry) > 2 & lfmm.results$q.pseas < 0.01 & abs(lfmm.results$z.pseas) > 2), ]  #Significant with more two climate variables
+	#Significant relationship with one specific climate variable (Pdry)
+	lfmm.results[ which(lfmm.results$q.pdry < 0.01 & abs(lfmm.results$z.pdry) > 2), ]
+	
+	#Significant with two climate variables (Pdry and Pseas), etc.
+	lfmm.results[ which(lfmm.results$q.pdry < 0.01 & abs(lfmm.results$z.pdry) > 2 & lfmm.results$q.pseas < 0.01 & abs(lfmm.results$z.pseas) > 2), ]  
+	
 	#You can also make "or" statements with "|" as the operator
 
 Then, find the locus you selected in the FASTA file. Note that a locus numbered "14" in `lfmm.results` is written as "CLocus_14" in the FASTA file. Finally, copy and paste the relevant sequence into [BLAST](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastSearch) to see if it strongly matches any known sequences and whether any functional information is available. Because of the low sample size in this exercise, the results are unlikely to be meaningful, but the approach can be readily applied your research projects.
