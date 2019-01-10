@@ -45,27 +45,33 @@ These commands save the plots as a PDF. If you are logged into the computer clus
 
 Finally, we need to load our sample coordinates and extract climate data at each of the points.
 
+	#Load sample names and coordinates
 	sample.coord <-read.table("sample.coord.txt", header=T, stringsAsFactors=F)
 	sample.coord
 	
-	crs.wgs <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"  #defines the spatial projection system that the points are in (usually WGS84)
+	#Define the spatial projection system that the points are in (usually WGS84)
+	crs.wgs <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"  
 	sample.coord.sp <- SpatialPointsDataFrame(sample.coord[,c('Longitude','Latitude')], proj4string=CRS(crs.wgs), data=sample.coord)
 
-	clim.points <- extract(clim.layer, sample.coord.sp)  #extracts the data for each point (projection of climate layer and coordinates must match)
-	clim.points <- cbind(sample.coord, clim.points)  #combines the sample coordinates with the climate data points
-	write.table(clim.points, "~/Workshop/GF/clim.points", sep="\t", quote=F, row.names=F)  #save the table for use tomorrow with gradient forest (GF)
+	#Extract the climate data for each point (projection of climate layer and coordinates must match)
+	clim.points <- extract(clim.layer, sample.coord.sp) 
+	
+	#Combine the sample coordinates with the climate data points and save for use with GF tomorrow
+	clim.points <- cbind(sample.coord, clim.points)  
+	write.table(clim.points, "~/Workshop/GF/clim.points", sep="\t", quote=F, row.names=F)  
 	clim.points 
 	
+	#Save climate data without sample names, latitude, longitude, or column names for LFMM
 	clim.env <- clim.points[, 4:7]
 	colnames(clim.env) <- NULL
 	clim.env
-	write.table(clim.env, "~/Workshop/LFMM/clim.env", sep="\t", quote=F, row.names=F) #For LFMM, we will use this version without sample names, latitude, longitude, or column names.
+	write.table(clim.env, "~/Workshop/LFMM/clim.env", sep="\t", quote=F, row.names=F) 
 	
 Note that instead of using climate variables directly, we could use principal components of the climate variables to generate a set of uncorrelated, synthetic climate variables. When dealing with correlated climate variables (as is typically the case), this strategy may be preferrable, but for today's exercise we will simply use the climate variables themselves.
 	
 ### Assessing population structure
 
-LFMM accounts for overall/background associations of genetic variation with environmental variation using *latent factors* to model unobserved variation. A key step in LFMM is determining the number of latent factors to include, as this can effect the power of the test. It is advised to start by using the number of population clusters (*K*) inferred from a program like Structure or Admixture as the initial value, and then consider values slightly higher and lower. We will estimate *K* using a built-in function called `snmf`, which is conveniently part of the same LEA package for R that implements LFMM. If you want to see an example using Admixture, you can look at [a previous version of this exercise](https://github.com/pgugger/LandscapeGenomics/blob/master/2016/Exercise5.md).
+LFMM accounts for overall/background associations of genetic variation with environmental variation using *latent factors* to model unobserved variation. A key step in LFMM is determining the number of latent factors to include, as this can effect the power of the test. It is advised to start by using the number of population clusters (*K*) inferred from a program like Structure or Admixture as the initial value, and then consider values slightly higher and lower as needed to properly control power and error. We will estimate *K* using a built-in function called `snmf`, which is conveniently part of the same LEA package for R that implements LFMM. If you want to see an example using Admixture, you can look at [a previous version of this exercise](https://github.com/pgugger/LandscapeGenomics/blob/master/2016/Exercise5.md).
 
 Enter R, set up the work environment, and run `snmf` to estimate *K*, considering *K* from 1-4:
 
@@ -88,7 +94,7 @@ It is also worth mentioning that the `snmf` as implemented in LEA offers the pot
 	axis(1, at = 1:length(bp$order), labels = bp$order, las=1, cex.axis = .3)
 	dev.off()
 
-####Short tangent on population structure-based outlier analysis 
+#### Short tangent on population structure-based outlier analysis 
 
 Some of you may also be interested to know that this structure analysis (`snmf`) enables an an outlier analysis similar to *F*st-outlier analysis but the populations are based on the clusters (*K*) that we just inferred (assuming *K* > 1). We have not talked much about these outlier approaches, but they operate under a similar premise to environmental outlier analyses, except that we look for loci that are extremely differentiated among populations (that presumably have different habitats), rather than loci that are extremely correlated with environmental gradients. In case you would like to implement this analysis, you can run the following code (optional):
 
@@ -114,7 +120,7 @@ When the analysis finishes, we need to combine the data from the three repetitio
 	z.pdry = z.scores(project, K = 1, d = 1)
 	z.pdry <- apply(z.pdry, 1, median)
 
-Next, we need to calculate lambda (the "genomic inflation factor"), which is commonly used for calibration of *P*-values. However, it is often considered too conservative, so some suggest using a value lower than lambda for the calibration. Lambda is calculated from the median of the median *z*-scores (from above) and a chi-squared distribution for each set of associations:
+Next, we need to calculate λ (the "genomic inflation factor"), which is commonly used for calibration of *P*-values. However, it is often considered too conservative, so some suggest using a value lower than λ for the calibration. λ is calculated from the median of the median *z*-scores (from above) and a χ<sup>2</sup> distribution for each set of associations:
 	
 	lambda.pdry = median(z.pdry^2)/qchisq(0.5, df = 1)
 	lambda.pdry
@@ -142,7 +148,7 @@ To confirm that the model is behaving well with the *K* we chose and the adjustm
 	hist(p.tseas.adj, col = "blue", main = "Tseas", xlab=expression(italic(P)))
 	dev.off()
 
-How do these look? Refer back to today's lecture and the LEA/LFMM manual for guidance. If they suggest an overly conservative (right skew) or overly liberal (left skew) model/calibration, then we could repeat the analysis with a lower or higher value of *K*, respectively, or if there is slight right skew we might consider substituting a value lower than lambda to manually calibrate. Keep in mind that we are working with a very small sample size in this tutorial, so the patterns may not be typical.
+How do these look? Refer back to today's lecture and the LEA/LFMM manual for guidance. If they suggest an overly conservative (right skew) or overly liberal (left skew) model/calibration, then we could repeat the analysis with a lower or higher value of *K*, respectively, or if there is slight right skew we might consider substituting a value lower than λ to manually calibrate. Keep in mind that we are working with a very small sample size in this tutorial, so the patterns may not be typical.
 
 Once we are convinced that the model is behaving well, we can move on. But, there is one final adjustment we need to make. We need to correct for multiple testing. We performed thousands of statistical tests (one per locus per climate variable), so many tests will appear significant by chance. The most common method of multiple testing correction is the *false discovery rate* (FDR) method of Benjamini and Hochberg (instead of Bonferroni correction, for example). In this process, we will adjust the *P*-values to *Q*-values. This correction can be easily implemented with the library `qvalue`.
 
@@ -154,7 +160,7 @@ Once we are convinced that the model is behaving well, we can move on. But, ther
 
 How does the number of significant tests based on *Q*-values (e.g., `sum(q.pdry<0.05)`) compare to the *P*-values (e.g., `sum(p.pdry.adj<0.05)`)?
 
-A common way to visually summarize large numbers of association tests is using Manhattan plots (as we saw earlier with the outliers based on differentiation). All we need to do is plot -log10(Q) for each of the sets of association tests
+A common way to visually summarize large numbers of association tests is using Manhattan plots (as we saw earlier with the outliers based on differentiation). All we need to do is plot -log<sub>10</sub>(Q) for each of the sets of association tests
 
 	pdf("LFMM_Manhattan.pdf")
 	par(mfrow = c(4,1))
