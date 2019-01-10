@@ -170,7 +170,7 @@ A common way to visually summarize large numbers of association tests is using M
 	plot(-log10(q.tseas), pch = 19, col = "blue", cex = .7, xlab = "SNP (ordered by contig arbitrarily)")
 	dev.off()
 
--log10(0.01) = 2, so you can see that there are many extremely high values greater than 2, representing low *Q*-values less than 0.01. How many of the significant ones (*Q* < 0.05) are also of large effect? To answer this question, you can look at the set of significant SNPs that also have very high or very low *z*-scores.
+-log<sub>10</sub>(0.01) = 2, so you can see that there are many extremely high values greater than 2, representing low *Q*-values less than 0.01. How many of the significant ones (*Q* < 0.05) are also of large effect? To answer this question, you can look at the set of significant SNPs that also have very high or very low *z*-scores.
 
 	sum(q.pdry<0.01 & abs(z.pdry)>2)
 	
@@ -204,7 +204,4 @@ First, examine one or two significant SNPs more closely by finding the sequence 
 
 Then, find the locus you selected in the FASTA file. Note that a locus numbered "14" in `lfmm.results` is written as "CLocus_14" in the FASTA file. Finally, copy and paste the relevant sequence into [BLAST](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastSearch) to see if it strongly matches any known sequences and whether any functional information is available. Because of the low sample size in this exercise, the results are unlikely to be meaningful, but the approach can be readily applied your research projects.
 
-If you finish early, try scaling up the BLAST search to include *all* the significant loci (or a large subset of interest). *Hint*: you can generate a list of significant loci in R as suggested above (perhaps keep just the column with locus numbers), save the list to file, and then use `grep -A -f` (see `man grep` for details) in the Linux command line to extract the list of relevant sequences in the FASTA file and save that subset as a new FASTA file. You will likely want to adjust the locus names in the file from R to better match those in the FASTA file (*e.g.*, 14 *versus* CLocus_14). You should be able to then BLAST the entire FASTA file at once. 
-
-
-
+If you finish early, try scaling up the BLAST search to include *all* the significant loci (or a large subset of interest). *Hint*: you can generate a list of significant loci in R as suggested above (perhaps keep just the column with locus numbers), save the list to file, and then use `grep -A -f` (see `man grep` for details) in the Linux command line to extract the list of relevant sequences in the FASTA file and save that subset as a new FASTA file. You will likely want to adjust the locus names in the file from R to better match those in the FASTA file (*e.g.*, 14 *versus* CLocus_14). You should be able to then BLAST the entire FASTA file at once.
