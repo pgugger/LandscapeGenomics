@@ -42,7 +42,7 @@ However, what if there are errors, so you don't have an exact match to the adapt
 
 First, we need to set up the configuration file, which also represents an opportunity to learn how to edit text files in the terminal. Open fastq_screen.conf with `vi` (or using your FTP client (*e.g.*, FileZilla) if you prefer not to learn the command line way). The top section indicates the path to the [Bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml) aligner for aligning short reads to genomes. The "Threads" section indicates how many processors your computer has available to run the analysis. The last section, called "Database", give the path to different genomes or sequences that you want to align your data to. Note that the genomes/sequences must be indexed first (not FASTA) using `bowtie2-build`, which I have already done for you and placed in `~/Workshop/Genomes/`. Edit the path names to reflect your working directory (*e.g.*, in the "Database" section, change `/home/pgugger/*` to `/home/your_username/*`). To edit in `vi`, type `i` for "insert" then use the keyboard to edit; press `ESC` to stop editing; and then save and close the file by typing `:x` (or close without saving using `:q!`). You can now run the program on one example file.
 
-	fastq_screen --aligner bowtie2 --conf ~/Workshop/Illumina_Data/fastq_screen.conf s_3_1_1101.fq.gz
+	fastq_screen --aligner bowtie2 --conf ~/Workshop/Test_Data/fastq_screen.conf s_3_1_1101.fq.gz
 
 When the program finishes, download the results files to your laptop, and open the HTML file. What fraction of reads align to the specified genomes? How many don't align anywhere? What could that mean!?
 
