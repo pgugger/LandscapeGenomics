@@ -185,7 +185,7 @@ Explore the results further in this way for this and the other climate variables
 	
 We can add the locus number and SNP positions indicated in the file `~/Worskhop/GBS_Data/Stacks_Output/snp.012.pos` that we generated earlier when we converted the SNPs to 012 format. Note that the SNP order should be the same because neither the file format conversion nor LFMM change the order.
 
-	snp.names <-read.table("~/Worskhop/GBS_Data/Stacks_Output/snp.012.pos", header=F)
+	snp.names <-read.table("~/Workshop/GBS_Data/Stacks_Output/snp.012.pos", header=F)
 	colnames(snp.names) <- c("locus", "position")
 	lfmm.results <- cbind(snp.names, lfmm.results)
 	head(lfmm.results)  #Now we have a clear table with locus names and LFMM results
