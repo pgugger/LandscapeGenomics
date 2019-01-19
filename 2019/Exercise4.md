@@ -121,7 +121,7 @@ We can also plot the "turnover functions" showing how allelic composition change
 	by.importance <- names(importance(gf))
 
 	pdf("GF_TurnoverFunctions.pdf")
-	plot(gf, plot.type = "C", imp.vars = by.importance, show.species = F, common.scale = T, cex.axis = 1, cex.lab = 1.2, line.ylab = 1, par.args = list(mgp = c(1.5, 0.5, 0), mar = c(2.5, 2, 2, 2), omi = c(0.2, 0.3, 0.2, 0.4)))
+	plot(gf, plot.type = "C", imp.vars = by.importance, show.species = F, common.scale = T, cex.axis = 1, cex.lab = 1.2, line.ylab = 1, ylim = c(0, 0.5), par.args = list(mgp = c(1.5, 0.5, 0), mar = c(2.5, 2, 2, 2), omi = c(0.2, 0.3, 0.2, 0.4)))
 	dev.off()
 
 Do you see any interesting patterns? It appears that genetic variation changes abruptly for Pseas values of 60 and then acheives high cumulative importance.
