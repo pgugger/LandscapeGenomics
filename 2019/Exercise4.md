@@ -212,7 +212,7 @@ A second potentially interesting comparison is to map where adaptive genetic var
 
 	#Do not run (assuming you successfully ran above)
 	pred <- predict(gf, clim.land[,-1])  
-	pca <- prcomp(pred.gf.all, center=T, scale.=F)
+	pca <- prcomp(pred, center=T, scale.=F)
 	
 	pred.adaptive <- predict(gf.adaptive, clim.land[,-1])  
 	pca.adaptive <- prcomp(pred.adaptive, center=T, scale.=F)
