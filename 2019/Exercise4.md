@@ -121,7 +121,7 @@ We can also plot the "turnover functions" showing how allelic composition change
 	by.importance <- names(importance(gf))
 
 	pdf("GF_TurnoverFunctions.pdf")
-	plot(gf, plot.type = "C", imp.vars = by.importance, show.species = F, common.scale = T, cex.axis = 1, cex.lab = 1.2, line.ylab = 1, ylim = c(0, 0.5), par.args = list(mgp = c(1.5, 0.5, 0), mar = c(2.5, 2, 2, 2), omi = c(0.2, 0.3, 0.2, 0.4)))
+	plot(gf, plot.type = "C", imp.vars = by.importance, show.species = F, common.scale = T, cex.axis = 1, cex.lab = 1.2, line.ylab = 1, par.args = list(mgp = c(1.5, 0.5, 0), mar = c(2.5, 2, 2, 2), omi = c(0.2, 0.3, 0.2, 0.4)))
 	dev.off()
 
 Do you see any interesting patterns? It appears that genetic variation changes abruptly for Pseas values of 60 and then acheives high cumulative importance.
@@ -129,7 +129,7 @@ Do you see any interesting patterns? It appears that genetic variation changes a
 We can also make plots of turnover functions for individual loci:
 
 	pdf("GF_TurnoverFunctions_bySNP.pdf")
-	plot(gf, plot.type = "C", imp.vars = by.importance, show.overall = F, legend = T, leg.posn = "topleft", leg.nspecies = 5, cex.lab = 0.7, cex.legend = 0.4, cex.axis = 0.6, line.ylab = 0.9, par.args = list(mgp = c(1.5, 0.5, 0), mar = c(2.5, 1, 0.1, 0.5), omi = c(0, 0.3, 0, 0)))
+	plot(gf, plot.type = "C", imp.vars = by.importance, show.overall = F, legend = T, leg.posn = "topleft", leg.nspecies = 5, cex.lab = 0.7, cex.legend = 0.4, cex.axis = 0.6, ylim = c(0, 0.5), line.ylab = 0.9, par.args = list(mgp = c(1.5, 0.5, 0), mar = c(2.5, 1, 0.1, 0.5), omi = c(0, 0.3, 0, 0)))
 	dev.off()
 
 Each line within each panel represents allelic change at a single SNP. Notice that in each panel some SNPs show very steep changes along the environmental gradient. One might consider these SNPs as candidates for involvement in local adaptation along the gradient. This approach to "outlier" detection is still being tested, but Fitzpatrick & Keller (2015) show a promising example. If interested, you can check if any of these highly associated SNPs (*e.g.*, those listed in the plot legend) were also significant in your LFMM analyses.
